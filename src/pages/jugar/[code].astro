@@ -1,0 +1,12 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import Game from '../../components/react/Game'
+
+export const prerender = false
+
+const { code } = Astro.params
+---
+
+<Layout title="Jugar">
+  <Game activityCode={code!} client:load />
+</Layout>

@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Inicio">
+  <div class="min-h-screen bg-gradient-to-b from-primary-50 to-white">
+    <header class="py-4 px-4">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <span class="text-xl font-bold text-primary-600">TeachGenius</span>
+        <a
+          href="/login"
+          class="px-4 py-2 text-primary-600 hover:text-primary-700 font-medium"
+        >
+          Iniciar sesión
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-12 md:py-24">
+      <div class="text-center">
+        <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          Aprende jugando con
+          <span class="text-primary-600">pupiletras</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          Crea actividades interactivas de pupiletras para tus alumnos.
+          Aprenden figuras literarias mientras se divierten.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/login"
+            class="min-h-[48px] inline-flex items-center justify-center px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition"
+          >
+            Soy Profesor
+          </a>
+          <div class="relative">
+            <input
+              type="text"
+              id="gameCode"
+              placeholder="Código de actividad"
+              class="w-full sm:w-auto min-h-[48px] px-4 py-3 pr-24 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition uppercase text-center font-mono"
+              maxlength="7"
+            />
+            <button
+              id="joinGame"
+              class="absolute right-1 top-1 bottom-1 px-4 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg transition"
+            >
+              Jugar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-24 grid gap-8 md:grid-cols-3">
+        <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Crea actividades</h3>
+          <p class="text-gray-600">
+            Diseña pupiletras con figuras literarias y compártelas con un código único
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Alumnos juegan</h3>
+          <p class="text-gray-600">
+            Los estudiantes ingresan el código y juegan desde cualquier dispositivo
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Ve resultados</h3>
+          <p class="text-gray-600">
+            Revisa el progreso de cada alumno con estadísticas detalladas
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="py-8 px-4 text-center text-gray-500 text-sm">
+      <p>TeachGenius - App educativa de figuras literarias</p>
+    </footer>
+  </div>
+
+  <script>
+    const input = document.getElementById('gameCode') as HTMLInputElement
+    const button = document.getElementById('joinGame')
+
+    button?.addEventListener('click', () => {
+      const code = input.value.trim().toUpperCase()
+      if (code) {
+        window.location.href = `/jugar/${code}`
+      }
+    })
+
+    input?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        button?.click()
+      }
+    })
+  </script>
+</Layout>

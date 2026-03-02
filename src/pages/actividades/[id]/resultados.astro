@@ -1,0 +1,12 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import ResultsTable from '../../../components/react/ResultsTable'
+
+export const prerender = false
+
+const { id } = Astro.params
+---
+
+<Layout title="Resultados">
+  <ResultsTable activityId={id!} client:load />
+</Layout>

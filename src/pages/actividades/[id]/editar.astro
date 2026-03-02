@@ -1,0 +1,12 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import ActivityForm from '../../../components/react/ActivityForm'
+
+export const prerender = false
+
+const { id } = Astro.params
+---
+
+<Layout title="Editar Actividad">
+  <ActivityForm activityId={id} client:load />
+</Layout>
