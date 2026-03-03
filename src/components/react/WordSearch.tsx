@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { generateWordSearch, checkWordInGrid } from '../../lib/wordSearchGenerator'
 
 interface WordSearchProps {
@@ -122,7 +121,7 @@ export default function WordSearch({ words, onWordFound, foundWords }: WordSearc
     if (foundWord && !foundWords.includes(foundWord)) {
       setLastFoundWord(foundWord)
       onWordFound(foundWord)
-      setTimeout(() => setLastFoundWord(null), 1000)
+      setTimeout(() => setLastFoundWord(null), 1500)
     }
 
     setSelectedCells([])
@@ -144,24 +143,35 @@ export default function WordSearch({ words, onWordFound, foundWords }: WordSearc
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <AnimatePresence>
-        {lastFoundWord && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="text-center mb-4"
-          >
-            <span className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full font-bold">
-              {lastFoundWord}
+      {/* Palabra a buscar */}
+      <div className="bg-primary-600 rounded-lg p-3 mb-3 text-center">
+        <p className="text-xs text-primary-200 mb-1">Busca la palabra</p>
+        {words.map((word) => {
+          const isFound = foundWords.includes(word.toUpperCase())
+          return (
+            <span
+              key={word}
+              className={`text-xl font-bold tracking-wider ${
+                isFound ? 'text-green-300 line-through' : 'text-white'
+              }`}
+            >
+              {word.toUpperCase()}
             </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )
+        })}
+      </div>
 
+      {/* Mensaje de éxito */}
+      {lastFoundWord && (
+        <div className="bg-green-100 text-green-700 text-center py-2 rounded-lg mb-3 font-medium text-sm">
+          ¡Correcto!
+        </div>
+      )}
+
+      {/* Grilla */}
       <div
         ref={gridRef}
-        className="aspect-square bg-white rounded-2xl shadow-lg p-2 touch-action-none select-none"
+        className="aspect-square bg-white rounded-xl border border-slate-200 p-2 touch-action-none select-none"
         onMouseDown={handleStart}
         onMouseMove={handleMove}
         onMouseUp={handleEnd}
@@ -171,7 +181,7 @@ export default function WordSearch({ words, onWordFound, foundWords }: WordSearc
         onTouchEnd={handleEnd}
       >
         <div
-          className="grid h-full w-full gap-0.5"
+          className="grid h-full w-full gap-px"
           style={{ gridTemplateColumns: `repeat(${grid.length}, 1fr)` }}
         >
           {grid.map((row, rowIndex) =>
@@ -180,41 +190,22 @@ export default function WordSearch({ words, onWordFound, foundWords }: WordSearc
               const found = isCellFound(rowIndex, colIndex)
 
               return (
-                <motion.div
+                <div
                   key={`${rowIndex}-${colIndex}`}
                   className={`
-                    flex items-center justify-center
-                    text-sm md:text-base font-bold rounded
-                    transition-colors duration-150
+                    flex items-center justify-center text-sm font-semibold rounded
+                    transition-colors duration-100
                     ${selected ? 'bg-primary-500 text-white' : ''}
                     ${found && !selected ? 'bg-green-500 text-white' : ''}
-                    ${!selected && !found ? 'bg-gray-100 text-gray-800' : ''}
+                    ${!selected && !found ? 'bg-slate-50 text-slate-700' : ''}
                   `}
-                  animate={found ? { scale: [1, 1.1, 1] } : {}}
-                  transition={{ duration: 0.3 }}
                 >
                   {letter}
-                </motion.div>
+                </div>
               )
             })
           )}
         </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2 justify-center">
-        {words.map((word) => (
-          <span
-            key={word}
-            className={`
-              px-3 py-1 rounded-full text-sm font-medium
-              ${foundWords.includes(word.toUpperCase())
-                ? 'bg-green-100 text-green-700 line-through'
-                : 'bg-gray-200 text-gray-700'}
-            `}
-          >
-            {word}
-          </span>
-        ))}
       </div>
     </div>
   )

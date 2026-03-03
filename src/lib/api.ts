@@ -17,7 +17,9 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${config.apiUrl}${path}`, {
+  const url = `${config.apiUrl}${path}`
+
+  const response = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,

@@ -44,9 +44,11 @@ export default function ActivityForm({ activityId }: ActivityFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isEditing, setIsEditing] = useState(false)
-  const { token } = useAuthStore()
+  const { token, _hasHydrated } = useAuthStore()
 
   useEffect(() => {
+    if (!_hasHydrated) return
+
     if (!token) {
       window.location.href = ROUTES.login
       return
@@ -80,7 +82,7 @@ export default function ActivityForm({ activityId }: ActivityFormProps) {
       }
       fetchActivity()
     }
-  }, [activityId, token])
+  }, [_hasHydrated, activityId, token])
 
   const addQuestion = () => {
     setQuestions([

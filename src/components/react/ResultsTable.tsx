@@ -36,9 +36,11 @@ export default function ResultsTable({ activityId }: ResultsTableProps) {
   const [results, setResults] = useState<Result[]>([])
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
   const [loading, setLoading] = useState(true)
-  const { token } = useAuthStore()
+  const { token, _hasHydrated } = useAuthStore()
 
   useEffect(() => {
+    if (!_hasHydrated) return
+
     if (!token) {
       window.location.href = ROUTES.login
       return
@@ -60,7 +62,7 @@ export default function ResultsTable({ activityId }: ResultsTableProps) {
     }
 
     fetchData()
-  }, [activityId, token])
+  }, [_hasHydrated, activityId, token])
 
   const formatTime = (seconds: number | null) => {
     if (seconds === null) return '-'

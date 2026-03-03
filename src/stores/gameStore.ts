@@ -77,15 +77,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   nextQuestion: () => {
     const state = get()
     const nextIndex = state.currentQuestionIndex + 1
-    if (state.activity && nextIndex >= state.activity.questions.length) {
-      set({ gameStatus: 'finished' })
-    } else {
-      set({
-        currentQuestionIndex: nextIndex,
-        foundWords: [],
-        showHint: false,
-      })
-    }
+    // Siempre incrementar el index - el componente Game detectará cuando
+    // currentQuestionIndex >= questions.length y llamará a handleFinishGame()
+    set({
+      currentQuestionIndex: nextIndex,
+      foundWords: [],
+      showHint: false,
+    })
   },
 
   addFoundWord: (word) =>

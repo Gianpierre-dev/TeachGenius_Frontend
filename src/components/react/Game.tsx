@@ -1,5 +1,4 @@
-import { useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react'
 import { useGameStore } from '../../stores/gameStore'
 import { api } from '../../lib/api'
 import { API_ROUTES } from '../../lib/routes'
@@ -124,8 +123,13 @@ export default function Game({ activityCode }: GameProps) {
     [getCurrentQuestion, sessionId, addFoundWord, incrementScore, nextQuestion, activity, timeRemaining]
   )
 
+  const isFinishingRef = useRef(false)
+
   const handleTimeUp = useCallback(async () => {
-    if (!sessionId || !activity) return
+    if (!sessionId || !activity || isFinishingRef.current) return
+    isFinishingRef.current = true
+
+    finishGame()
 
     try {
       await api.post<FinishData>(API_ROUTES.sessionFinish(sessionId), {
@@ -135,12 +139,14 @@ export default function Game({ activityCode }: GameProps) {
     } catch (error) {
       console.error('Error finishing game:', error)
     }
-
-    finishGame()
   }, [sessionId, activity, score, finishGame])
 
   const handleFinishGame = useCallback(async () => {
-    if (!sessionId || !activity) return
+    if (!sessionId || !activity || isFinishingRef.current) return
+    isFinishingRef.current = true
+
+    // Cambiar estado primero para evitar múltiples llamadas
+    finishGame()
 
     try {
       await api.post<FinishData>(API_ROUTES.sessionFinish(sessionId), {
@@ -150,9 +156,13 @@ export default function Game({ activityCode }: GameProps) {
     } catch (error) {
       console.error('Error finishing game:', error)
     }
-
-    finishGame()
   }, [sessionId, activity, timeRemaining, score, finishGame])
+
+  const currentQuestion = getCurrentQuestion()
+  const currentWords = useMemo(
+    () => (currentQuestion ? [currentQuestion.answer] : []),
+    [currentQuestion?.answer]
+  )
 
   useEffect(() => {
     if (gameStatus === 'playing' && activity && currentQuestionIndex >= activity.questions.length) {
@@ -162,8 +172,8 @@ export default function Game({ activityCode }: GameProps) {
 
   if (!activity) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-slate-300 border-t-primary-600 rounded-full animate-spin" />
       </div>
     )
   }
@@ -183,18 +193,16 @@ export default function Game({ activityCode }: GameProps) {
     )
   }
 
-  const currentQuestion = getCurrentQuestion()
   if (!currentQuestion) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white py-4 px-4">
-      <div className="max-w-2xl mx-auto">
-        <header className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-lg mx-auto px-4 py-4">
+        {/* Header */}
+        <header className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200">
           <div>
-            <h1 className="text-lg font-bold text-gray-900 truncate max-w-[200px]">
-              {activity.title}
-            </h1>
-            <p className="text-sm text-gray-500">{studentName}</p>
+            <h1 className="font-semibold text-slate-900">{activity.title}</h1>
+            <p className="text-sm text-slate-500">{studentName} • {score}/{activity.questions.length}</p>
           </div>
           <Timer
             timeRemaining={timeRemaining}
@@ -204,32 +212,22 @@ export default function Game({ activityCode }: GameProps) {
           />
         </header>
 
-        <div className="space-y-6">
-          <AnimatePresence mode="wait">
-            <QuestionCard
-              key={currentQuestionIndex}
-              questionNumber={currentQuestionIndex + 1}
-              totalQuestions={activity.questions.length}
-              question={currentQuestion.question}
-              example={currentQuestion.example}
-              hint={currentQuestion.hint}
-              showHint={showHint}
-              onShowHint={() => setShowHint(true)}
-            />
-          </AnimatePresence>
+        <div className="space-y-4">
+          <QuestionCard
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={activity.questions.length}
+            question={currentQuestion.question}
+            example={currentQuestion.example}
+            hint={currentQuestion.hint}
+            showHint={showHint}
+            onShowHint={() => setShowHint(true)}
+          />
 
           <WordSearch
-            words={[currentQuestion.answer]}
+            words={currentWords}
             onWordFound={handleWordFound}
             foundWords={foundWords}
           />
-
-          <div className="text-center">
-            <p className="text-sm text-gray-500">
-              Puntuación: <span className="font-bold text-primary-600">{score}</span> /{' '}
-              {activity.questions.length}
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -251,87 +249,52 @@ function StartScreen({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white flex items-center justify-center px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-primary-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">{activity.title}</h1>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-semibold text-slate-900">{activity.title}</h1>
             {activity.description && (
-              <p className="mt-2 text-gray-600">{activity.description}</p>
+              <p className="mt-1 text-sm text-slate-500">{activity.description}</p>
             )}
-            <p className="mt-2 text-sm text-gray-500">
-              Profesor: {activity.teacherName}
-            </p>
           </div>
 
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center gap-3 text-gray-600">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              <span>{activity.questions.length} preguntas</span>
+          <div className="flex gap-4 mb-6 text-center">
+            <div className="flex-1 py-3 bg-slate-50 rounded-lg">
+              <p className="text-2xl font-semibold text-slate-900">{activity.questions.length}</p>
+              <p className="text-xs text-slate-500">preguntas</p>
             </div>
-            <div className="flex items-center gap-3 text-gray-600">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>{Math.floor(activity.timeLimit / 60)} minutos</span>
+            <div className="flex-1 py-3 bg-slate-50 rounded-lg">
+              <p className="text-2xl font-semibold text-slate-900">{Math.floor(activity.timeLimit / 60)}</p>
+              <p className="text-xs text-slate-500">minutos</p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Tu nombre
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                autoFocus
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
-                placeholder="Escribe tu nombre"
-              />
-            </div>
+          <form onSubmit={handleSubmit}>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Tu nombre
+            </label>
+            <input
+              name="name"
+              type="text"
+              required
+              autoFocus
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none mb-4"
+              placeholder="Escribe tu nombre"
+            />
             <button
               type="submit"
-              className="w-full min-h-[48px] bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-xl transition"
+              className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
             >
               Comenzar
             </button>
           </form>
+
+          <p className="text-center text-xs text-slate-400 mt-4">
+            Prof. {activity.teacherName}
+          </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
@@ -348,71 +311,50 @@ function FinishScreen({
   activityTitle: string
 }) {
   const percentage = Math.round((score / totalQuestions) * 100)
+  const [showBar, setShowBar] = useState(false)
+
+  useEffect(() => {
+    setTimeout(() => setShowBar(true), 100)
+  }, [])
 
   const getMessage = () => {
-    if (percentage >= 90) return '¡Excelente trabajo!'
-    if (percentage >= 70) return '¡Muy bien!'
-    if (percentage >= 50) return '¡Buen intento!'
-    return '¡Sigue practicando!'
-  }
-
-  const getEmoji = () => {
-    if (percentage >= 90) return '🎉'
-    if (percentage >= 70) return '👏'
-    if (percentage >= 50) return '👍'
-    return '💪'
+    if (percentage >= 90) return 'Excelente'
+    if (percentage >= 70) return 'Muy bien'
+    if (percentage >= 50) return 'Buen trabajo'
+    return 'Sigue practicando'
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white flex items-center justify-center px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring' }}
-            className="text-6xl mb-4"
-          >
-            {getEmoji()}
-          </motion.div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center">
+          <p className="text-sm text-slate-500 mb-1">{studentName}</p>
+          <h1 className="text-xl font-semibold text-slate-900 mb-6">{getMessage()}</h1>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{getMessage()}</h1>
-          <p className="text-gray-600 mb-6">{studentName}</p>
-
-          <div className="bg-primary-50 rounded-2xl p-6 mb-6">
-            <div className="text-5xl font-bold text-primary-600 mb-2">
-              {score}/{totalQuestions}
-            </div>
-            <p className="text-gray-600">respuestas correctas</p>
-            <div className="mt-4 h-3 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${percentage}%` }}
-                transition={{ delay: 0.5, duration: 1 }}
-                className={`h-full rounded-full ${
-                  percentage >= 70 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
-              />
-            </div>
-            <p className="mt-2 text-2xl font-bold text-gray-700">{percentage}%</p>
+          <div className="mb-6">
+            <p className="text-5xl font-bold text-slate-900 mb-2">{percentage}%</p>
+            <p className="text-sm text-slate-500">{score} de {totalQuestions} correctas</p>
           </div>
 
-          <p className="text-sm text-gray-500 mb-6">
-            Actividad: {activityTitle}
-          </p>
+          <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-6">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ${
+                percentage >= 70 ? 'bg-green-500' : percentage >= 50 ? 'bg-amber-500' : 'bg-red-500'
+              }`}
+              style={{ width: showBar ? `${percentage}%` : '0%' }}
+            />
+          </div>
+
+          <p className="text-xs text-slate-400 mb-4">{activityTitle}</p>
 
           <button
             onClick={() => window.location.reload()}
-            className="w-full min-h-[48px] bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-xl transition"
+            className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
           >
             Jugar de nuevo
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
