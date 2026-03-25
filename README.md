@@ -1,43 +1,58 @@
-# Astro Starter Kit: Minimal
+# TeachGenius Frontend
 
-```sh
-pnpm create astro@latest -- --template minimal
+Interfaz web de **TeachGenius**, una plataforma educativa gamificada donde profesores crean pupiletras interactivos y los alumnos los resuelven en tiempo real.
+
+## Tech Stack
+
+- **Astro 5** — Framework web con SSR (Node adapter)
+- **React 19** — Componentes interactivos
+- **Tailwind CSS 4** — Estilos utility-first
+- **Zustand** — Estado global con persistencia en localStorage
+- **Zod** — Validación de schemas
+- **Framer Motion** — Animaciones fluidas
+- **TypeScript** — Tipado estricto
+
+## Funcionalidades
+
+### Para Profesores
+- Registro e inicio de sesión con JWT
+- Dashboard con estadísticas (actividades, jugadores, preguntas)
+- Crear/editar/eliminar actividades con hasta 50 preguntas
+- Código único por actividad para compartir con alumnos
+- Tabla de resultados con scores, tiempos y porcentajes
+
+### Para Alumnos
+- Ingresar con código de actividad (sin registro)
+- Pupiletras interactivo en grid 15x15
+- Selección en 8 direcciones (horizontal, vertical, diagonal)
+- Temporizador con indicador de urgencia
+- Pistas opcionales por pregunta
+- Pantalla de resultados al finalizar
+
+## Estructura
+
+```
+src/
+├── pages/          # Rutas Astro (/, /login, /dashboard, /jugar/[code])
+├── components/     # React (Game, WordSearch, Dashboard, LoginForm, etc.)
+├── stores/         # Zustand (authStore, gameStore)
+├── lib/            # Utilidades y generador de pupiletras
+├── layouts/        # Layout principal
+└── styles/         # CSS global y paleta de colores
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Instalación
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+pnpm install
+cp .env.example .env   # Configurar API URL
+pnpm run dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Variables de entorno
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Ver [`.env.example`](.env.example) para las variables requeridas.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Repositorio relacionado
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- **Backend**: [TeachGenius_Backend](https://github.com/Gianpierre-dev/TeachGenius_Backend)
